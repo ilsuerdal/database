@@ -1,0 +1,232 @@
+CREATE DATABASE PROJ;
+
+USE PROJ;
+
+CREATE TABLE PolicyHolder (
+       PolicyHolderID INT(20) PRIMARY KEY,
+       Name VARCHAR(50) NOT NULL,
+       Surname VARCHAR(50) NOT NULL,
+       Address VARCHAR(200) NOT NULL,
+       Phone VARCHAR(15) NOT NULL,
+       Email VARCHAR(100) NOT NULL,
+       DOB DATE NOT NULL);
+
+DESC PolicyHolder;
+
+INSERT INTO PolicyHolder VALUES
+(100001, 'Max', 'Payne', '1 Noir Street, New York', '5551112222', 'max.payne@email.com', '1978-07-23'),
+(100002, 'Arthur', 'Morgan', '2 Wild West Lane, Saint Denis', '5553334444', 'arthur.morgan@email.com', '1873-09-07'),
+(100003, 'Nathan', 'Drake', '3 Adventurers Way, USA', '5555556666', 'nathan.drake@email.com', '1976-01-05'),
+(100004, 'Joel', 'Miller', '4 Survivors Haven, Jackson', '5557778888', 'joel.miller@email.com', '1984-12-12'),
+(100005, 'Ellie', 'Williams', '5 Post-Apocalyptic Lane, Jackson', '5559990000', 'ellie.williams@email.com', '1995-03-14'),
+(100006, 'Lara', 'Croft', '6 Croft Manor, England', '5550001111', 'lara.croft@email.com', '1996-02-14'),
+(100007, 'Gordon', 'Freeman', '7 Black Mesa Research Facility, USA', '5552223333', 'gordon.freeman@email.com', '1982-06-17'),
+(100008, 'Tommy', 'Vercetti', '8 Vice City, USA', '5554445555', 'tommy.vercetti@email.com', '1951-04-17'),
+(100009, 'Leon', 'Kennedy', '9 Raccoon City Police Department, USA', '5556667777', 'leon.kennedy@email.com', '1977-03-19'),
+(100010, 'Edward', 'Kenway', '10 Pirate Cove, Caribbean', '5558889999', 'edward.kenway@email.com', '1693-03-10');
+
+SELECT*FROM PolicyHolder;
+
+CREATE TABLE Policy (
+PolicyID INT(20) PRIMARY KEY,
+PolicyNumber VARCHAR(50) NOT NULL,
+StartDate DATE NOT NULL,
+EndDate DATE NOT NULL,
+PremiumAmount DECIMAL(10,2) NOT NULL,
+CoverageType VARCHAR(50) NOT NULL,
+PolicyHolderID INT,
+FOREIGN KEY (PolicyHolderID) REFERENCES PolicyHolder(PolicyHolderID));
+
+DESC Policy;
+
+INSERT INTO Policy VALUES
+(1, 'AUTO001', '2023-01-01', '2024-01-01', 1000.00, 'Auto Insurance', 100001),
+(2, 'HOME002', '2023-02-01', '2024-02-01', 1200.00, 'Home Insurance', 100002),
+(3, 'HEALTH003', '2023-03-01', '2024-03-01', 800.00, 'Health Insurance', 100003),
+(4, 'TRAVEL004', '2023-04-01', '2024-04-01', 1500.00, 'Travel Insurance', 100004),
+(5, 'LIFE005', '2023-05-01', '2024-05-01', 900.00, 'Life Insurance', 100005),
+(6, 'PET006', '2023-06-01', '2024-06-01', 1100.00, 'Pet Insurance', 100006),
+(7, 'RENTERS007', '2023-07-01', '2024-07-01', 950.00, 'Renters Insurance', 100007),
+(8, 'BUSINESS008', '2023-08-01', '2024-08-01', 1300.00, 'Business Insurance', 100008),
+(9, 'CYBERSECURITY009', '2023-09-01', '2024-09-01', 1200.00, 'Cybersecurity Insurance', 100009),
+(10, 'WEDDING010', '2023-10-01', '2024-10-01', 800.00, 'Wedding Insurance', 100010);
+SELECT*FROM Policy;
+
+CREATE TABLE Agent (
+AgentID INT(20) PRIMARY KEY,
+Name VARCHAR(50) NOT NULL,
+Surname VARCHAR(50) NOT NULL,
+Phone VARCHAR(15) NOT NULL,
+Email VARCHAR(100) NOT NULL,
+ValidEmail BOOLEAN GENERATED ALWAYS AS (Email REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$') STORED,
+CHECK (ValidEmail = 1));
+
+DELIMITER $$
+CREATE TRIGGER Before_Insert_Update_Agent
+BEFORE INSERT ON Agent
+FOR EACH ROW
+BEGIN
+    IF NEW.Email NOT REGEXP '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,4}$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid email format';
+    END IF;
+END;
+$$
+
+DELIMITER ;
+
+INSERT INTO Agent (AgentID, Name, Surname, Phone, Email) VALUES
+(1, 'William', 'Shakespeare', '5551112222', 'william.shakespeare@email.com'),
+(2, 'Jane', 'Austen', '5553334444', 'jane.austen@email.com'),
+(3, 'Charles', 'Dickens', '5555556666', 'charles.dickens@email.com'),
+(4, 'J.K.', 'Rowling', '5557778888', 'jk.rowling@email.com'),
+(5, 'Ernest', 'Hemingway', '5559990000', 'ernest.hemingway@email.com'),
+(6, 'Agatha', 'Christie', '5551112222', 'agatha.christie@email.com'),
+(7, 'F. Scott', 'Fitzgerald', '5553334444', 'fscott.fitzgerald@email.com'),
+(8, 'George', 'Orwell', '5555556666', 'george.orwell@email.com'),
+(9, 'Harper', 'Lee', '5557778888', 'harper.lee@email.com'),
+(10, 'Gabriel', 'Garcia Marquez', '5559990000', 'gabriel.garciamarquez@email.com');
+
+SELECT*FROM Agent;
+
+CREATE TABLE Claim (
+ClaimID INT(20) PRIMARY KEY,
+ClaimNumber VARCHAR(50) NOT NULL,
+DateFiled DATE NOT NULL,
+DateProcessed DATE NOT NULL,
+ClaimAmount DECIMAL(15,2) NOT NULL,
+Status VARCHAR(50) NOT NULL);
+
+DESC Claim;
+
+INSERT INTO Claim VALUES
+(1, 'CLAIM001', '2023-01-15', '2023-02-01', 1000.00, 'Pending'),
+(2, 'CLAIM002', '2023-02-20', '2023-03-10', 1200.00, 'Approved'),
+(3, 'CLAIM003', '2023-03-05', '2023-04-01', 800.00, 'Rejected'),
+(4, 'CLAIM004', '2023-04-10', '2023-05-05', 1500.00, 'Processing'),
+(5, 'CLAIM005', '2023-05-25', '2023-06-15', 900.00, 'Approved');
+
+SELECT*FROM Claim;
+
+CREATE TABLE Beneficiary (
+BeneficiaryID INT(20) PRIMARY KEY,
+Name VARCHAR(50) NOT NULL,
+Surname VARCHAR(50) NOT NULL,
+Relationship VARCHAR(50) NOT NULL,
+DOB DATE NOT NULL);
+
+DESC Beneficiary;
+
+INSERT INTO Beneficiary VALUES
+(1, 'Son', 'Goku', 'Son', '1989-04-16'),
+(2, 'Naruto', 'Uzumaki', 'Friend', '1997-10-10'),
+(3, 'Luffy', 'Monkey', 'Friend', '1994-05-05'),
+(4, 'Sakura', 'Haruno', 'Teammate', '1986-03-28'),
+(5, 'Edward', 'Elric', 'Brother', '1899-12-31'),
+(6, 'Saitama', 'One Punch', 'Hero', '1986-06-29'),
+(7, 'Mikasa', 'Ackerman', 'Adopted Sister', '1995-02-10'),
+(8, 'Vegeta', 'Prince', 'Rival', '1973-12-16'),
+(9, 'Hinata', 'Hyuga', 'Wife', '1992-12-27'),
+(10, 'Kakashi', 'Hatake', 'Sensei', '1970-09-15');
+
+SELECT*FROM Beneficiary;
+
+CREATE TABLE InsuranceCompany (
+CompanyID INT(20) PRIMARY KEY,
+CompanyName VARCHAR(100) NOT NULL,
+Address VARCHAR(200) NOT NULL,
+Phone VARCHAR(15) NOT NULL,
+Email VARCHAR(100) NOT NULL);
+
+DESC InsuranceCompany;
+
+INSERT INTO InsuranceCompany VALUES
+(1, 'Andromeda Insurance', '1 Spiral Galaxy Lane, Celestial City', '555-1234', 'info@andromedainsurance.com'),
+(2, 'Orion Insurers', '2 Nebula Avenue, Starry Sky Town', '555-5678', 'info@orioninsurers.com'),
+(3, 'Milky Way Assurance', '3 Galactic Road, Astro Village', '555-9012', 'info@milkywayassurance.com'),
+(4, 'Pegasus Underwriters', '4 Constellation Crescent, Cosmos City', '555-3456', 'info@pegasusunderwriters.com'),
+(5, 'Nebula Coverage', '5 Interstellar Street, Universeville', '555-7890', 'info@nebulacoverage.com'),
+(6, 'Andromeda Galaxy Insurance', '6 Cosmic Lane, Galactic City', '555-1111', 'info@andromedagalaxyinsurance.com'),
+(7, 'Orion Star Insurers', '7 Nebula Avenue, Star Cluster Town', '555-2222', 'info@orionstarinsurers.com'),
+(8, 'Stellar Nebula Assurance', '8 Galactic Road, Celestial Village', '555-3333', 'info@stellarnebulaassurance.com'),
+(9, 'Cosmic Pegasus Underwriters', '9 Constellation Crescent, Cosmos City', '555-4444', 'info@cosmicpegasusunderwriters.com'),
+(10, 'Galactic Horizon Coverage', '10 Interstellar Street, Universeville', '555-5555', 'info@galactichorizoncoverage.com');
+
+SELECT*FROM InsuranceCompany;
+
+SELECT p.PolicyID, p.PolicyNumber, p.StartDate, p.EndDate, p.PremiumAmount, p.CoverageType, ph.Name, ph.Surname
+FROM Policy p
+INNER JOIN PolicyHolder ph ON p.PolicyHolderID = ph.PolicyHolderID
+WHERE (p.CoverageType = 'Auto Insurance' OR p.CoverageType = 'Home Insurance') AND p.PremiumAmount > 1000;
+
+SELECT Claim.ClaimNumber, Claim.DateFiled, Claim.DateProcessed, Claim.ClaimAmount, Claim.Status,
+       Beneficiary.Name AS BeneficiaryName, Beneficiary.Surname AS BeneficiarySurname
+FROM Claim
+JOIN Beneficiary ON Claim.ClaimID = Beneficiary.BeneficiaryID
+WHERE Claim.Status = 'Approved'
+   OR (Claim.Status = 'Pending' AND Beneficiary.Relationship = 'Wife');
+
+
+SELECT AVG(DATEDIFF(CURDATE(), DOB)) AS Average_Age_of_Policy_Holders
+FROM PolicyHolder;
+
+
+SELECT COUNT(*) AS ApprovedClaimCount FROM Claim 
+WHERE Status = 'Approved';
+
+SELECT c.Status, SUM(c.ClaimAmount) AS TotalPaid FROM Claim c GROUP BY c.Status;
+
+SELECT * FROM Policy
+WHERE PremiumAmount = (SELECT MAX(PremiumAmount) FROM Policy);
+
+SELECT * FROM Policy
+WHERE StartDate = (SELECT MIN(StartDate) FROM Policy);
+
+SELECT * FROM PolicyHolder WHERE Name LIKE 'E%';
+
+SELECT * FROM Policy WHERE PolicyHolderID IN (100003, 100008, 100002);
+
+SELECT Policy.*, PolicyHolder.*
+FROM Policy
+JOIN PolicyHolder ON Policy.PolicyHolderID = PolicyHolder.PolicyHolderID
+WHERE Policy.CoverageType IN ('Health Insurance', 'Travel Insurance')
+   AND PolicyHolder.Phone LIKE '555%';
+
+
+SELECT PolicyHolder.*, Policy.*
+FROM PolicyHolder
+JOIN Policy ON PolicyHolder.PolicyHolderID = Policy.PolicyHolderID
+WHERE PolicyHolder.Surname LIKE 'M%'
+   AND Policy.CoverageType IN ('Auto Insurance', 'Home Insurance', 'Life Insurance');
+
+SELECT SUM(ClaimAmount), Status FROM CLAIM GROUP BY STATUS ORDER BY STATUS; 
+
+SELECT CoverageType, AVG(PremiumAmount) AS AveragePremium FROM Policy GROUP BY CoverageType HAVING AveragePremium > 1000; 
+
+ALTER TABLE Agent DROP COLUMN AgentID, ADD COLUMN NewAgentID INT AUTO_INCREMENT PRIMARY KEY, MODIFY COLUMN Email VARCHAR(100) UNIQUE; 
+
+SELECT*FROM Agent; 
+
+SELECT CONCAT(Name, ' ', Surname) AS FullName FROM PolicyHolder; 
+DELETE FROM InsuranceCompany WHERE CompanyId= 4; SELECT*FROM InsuranceCompany; 
+
+UPDATE InsuranceCompany SET Email = 'newemail@milkywayassurance.com' WHERE CompanyID = 3; SELECT*FROM InsuranceCompany; 
+
+
+SELECT PolicyHolder.Name, PolicyHolder.Surname, Policy.PolicyID, Policy.PolicyNumber, Policy.PremiumAmount FROM Policy INNER JOIN 
+PolicyHolder ON Policy.PolicyHolderID = PolicyHolder.PolicyHolderID; 
+
+
+SELECT PolicyHolder.PolicyHolderID, PolicyHolder.Name, Policy.PolicyNumber, Policy.StartDate, Policy.EndDate FROM PolicyHolder LEFT JOIN Policy ON PolicyHolder.PolicyHolderID = Policy.PolicyHolderID; 
+
+SELECT PolicyHolder.PolicyHolderID, Policy.PolicyNumber, Policy.StartDate, Policy.EndDate FROM PolicyHolder RIGHT JOIN Policy ON PolicyHolder.PolicyHolderID = Policy.PolicyHolderID; 
+
+SELECT ph.PolicyHolderID, ph.Name AS PolicyHolderName, ph.Surname AS PolicyHolderSurname, p.PolicyID, p.PolicyNumber, p.StartDate, p.EndDate, p.PremiumAmount 
+FROM 
+PolicyHolder ph 
+CROSS JOIN 
+Policy p LIMIT 5; 
+
+
+
+
